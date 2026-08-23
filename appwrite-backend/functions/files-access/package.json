@@ -1,0 +1,11 @@
+{
+  "name": "files-access",
+  "version": "1.0.0",
+  "description": "Appwrite Function: resolves GET /files/:id with a real 403-vs-404 distinction (see src/main.js).",
+  "private": true,
+  "type": "commonjs",
+  "main": "src/main.js",
+  "dependencies": {
+    "node-appwrite": "^14.0.0"
+  }
+}

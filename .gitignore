@@ -1,0 +1,20 @@
+# Secrets — never commit
+.env
+*.env
+!.env.example
+
+# Dependencies
+node_modules/
+
+# Custom backend local file storage (seeded/uploaded file bytes)
+custom-backend/storage/*
+!custom-backend/storage/.gitkeep
+
+# OS / editor cruft
+.DS_Store
+*.log
+npm-debug.log*
+
+# Editors
+.vscode/
+.idea/
