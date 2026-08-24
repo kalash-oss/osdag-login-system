@@ -1,16 +1,23 @@
 const express = require('express');
 const path = require('path');
 const fs = require('fs');
+const rateLimit = require('express-rate-limit');
 const pool = require('../config/db');
 const requireAuth = require('../middleware/requireAuth');
 
 const router = express.Router();
 const STORAGE_DIR = path.join(__dirname, '..', '..', 'storage');
+const filesReadLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100,
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
 // GET /files — only files owned by the authenticated user. Ownership is part
 // of the WHERE clause (not filtered after fetching everything), so the DB
 // itself never returns another user's rows.
-router.get('/files', requireAuth, async (req, res) => {
+router.get('/files', requireAuth, filesReadLimiter, async (req, res) => {
   try {
     const result = await pool.query(
       `SELECT id, file_name AS "fileName", mime_type AS "mimeType",
@@ -63,7 +70,7 @@ async function findFileOrRespondError(req, res, fileId) {
 }
 
 // GET /files/:id — metadata for a single file, with ownership enforced.
-router.get('/files/:id', requireAuth, async (req, res) => {
+router.get('/files/:id', requireAuth, filesReadLimiter, async (req, res) => {
   try {
     const file = await findFileOrRespondError(req, res, req.params.id);
     if (!file) return; // response already sent by the helper
@@ -76,7 +83,7 @@ router.get('/files/:id', requireAuth, async (req, res) => {
 });
 
 // GET /files/:id/download — streams the actual file bytes, same ownership check.
-router.get('/files/:id/download', requireAuth, async (req, res) => {
+router.get('/files/:id/download', requireAuth, filesReadLimiter, async (req, res) => {
   try {
     const file = await findFileOrRespondError(req, res, req.params.id);
     if (!file) return;
