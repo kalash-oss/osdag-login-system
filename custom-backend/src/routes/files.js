@@ -1,11 +1,21 @@
 const express = require('express');
 const path = require('path');
 const fs = require('fs');
+const rateLimit = require('express-rate-limit');
 const pool = require('../config/db');
 const requireAuth = require('../middleware/requireAuth');
 
 const router = express.Router();
 const STORAGE_DIR = path.join(__dirname, '..', '..', 'storage');
+const filesReadLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100,
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Apply read-rate limiting to all routes in this router before auth/handlers.
+router.use(filesReadLimiter);
 
 // GET /files — only files owned by the authenticated user. Ownership is part
 // of the WHERE clause (not filtered after fetching everything), so the DB
